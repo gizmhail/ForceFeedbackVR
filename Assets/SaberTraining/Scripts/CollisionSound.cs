@@ -7,6 +7,7 @@ public class CollisionSound : MonoBehaviour
 {
     public List<AudioClip> collisionSounds = new List<AudioClip>();
     private List<AudioSource> audioSources;
+    public float maxVolume = 0.5f;
 
     float lastSoundPlayTime;
     float minPauseBetweenSoundPlayTime = 1f;
@@ -49,7 +50,7 @@ public class CollisionSound : MonoBehaviour
         if (collisionSounds == null || collisionSounds.Count == 0) return;
         var clip = collisionSounds[Random.Range(0, collisionSounds.Count - 1)];
         audioSource.clip = clip;
-        audioSource.volume = Random.Range(0.7f, 1);
+        audioSource.volume = Random.Range(maxVolume/2f, maxVolume);
         audioSource.Play();
         lastSoundPlayTime = Time.time;
         //TODO use velocity to increase new sound probability

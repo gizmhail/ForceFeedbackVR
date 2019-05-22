@@ -645,8 +645,8 @@ GameObject:
   - component: {fileID: 1863372095936523707}
   - component: {fileID: 1863372095936523704}
   - component: {fileID: 374385503}
-  - component: {fileID: 374385504}
   - component: {fileID: 374385502}
+  - component: {fileID: 374385504}
   m_Layer: 10
   m_Name: GameSaber
   m_TagString: Untagged
@@ -829,22 +829,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &374385504
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1863372095936523710}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d564323dc0736e94ea7b9abbdca90d3f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  collisionSounds:
-  - {fileID: 8300000, guid: d8fe5e52e1f663e4f83c7d221c2f5a1a, type: 3}
-  - {fileID: 8300000, guid: d84ccbd5aa63b0f4d8e7e314c0c9f60e, type: 3}
-  - {fileID: 8300000, guid: 6f6f488852b0aaf40a0709b8204f853e, type: 3}
 --- !u!82 &374385502
 AudioSource:
   m_ObjectHideFlags: 0
@@ -941,6 +925,23 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &374385504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1863372095936523710}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d564323dc0736e94ea7b9abbdca90d3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  collisionSounds:
+  - {fileID: 8300000, guid: d8fe5e52e1f663e4f83c7d221c2f5a1a, type: 3}
+  - {fileID: 8300000, guid: d84ccbd5aa63b0f4d8e7e314c0c9f60e, type: 3}
+  - {fileID: 8300000, guid: 6f6f488852b0aaf40a0709b8204f853e, type: 3}
+  maxVolume: 0.2
 --- !u!1 &1863372095973447279
 GameObject:
   m_ObjectHideFlags: 0
