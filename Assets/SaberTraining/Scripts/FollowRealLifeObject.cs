@@ -33,6 +33,7 @@ public class FollowRealLifeObject : MonoBehaviour
 
     public bool isJoiningBack = true;
     float joiningBackEndTime = -1;
+    float joiningBackDuration = 0.2f;
 
     //TODO Handle hand_right_renderPart_0 Skinmeshrenderer material
 
@@ -92,7 +93,7 @@ public class FollowRealLifeObject : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (isJoiningBack || (isCollisioning && isGrabbed)) {
+        if ((isCollisioning && isGrabbed)) {
             EnableRealLifeMGhostMesh();
             // Try to go back to real life object
             /*
@@ -113,7 +114,10 @@ public class FollowRealLifeObject : MonoBehaviour
             }
             rb.AddForceTowards(physicsVRGrabSpotTransform.position, realLifeGrabSpotTransform.position, frequency: forceCatchupScale);
             rb.AddTorqueTowards(physicsVRGrabSpotTransform.rotation, realLifeGrabSpotTransform.transform.rotation, frequency: torqueCatchupScale);
-            
+
+            // Small additional force if the hand is in the right position, but bended
+            rb.AddForceTowards(physicsVRCollisionSpotTransform.position, realLifeCollisionSpotTransform.position, frequency: forceCatchupScale/2);
+
 
             if (isGrabbed)
             {
@@ -123,6 +127,22 @@ public class FollowRealLifeObject : MonoBehaviour
             } else
             {
                 OVRInput.SetControllerVibration(0, 0.1f, controllerKind);
+            }
+        }
+        else if (isJoiningBack)
+        {
+            var returnStart = joiningBackEndTime - joiningBackDuration;
+            var returnProgress = (Time.time - returnStart) / joiningBackDuration;
+            Debug.Log($"Progress: {returnProgress}");
+
+            physicsVRObject.transform.position = Vector3.Lerp(physicsVRObject.transform.position, realLifeObject.transform.position, returnProgress);
+            physicsVRObject.transform.rotation = Quaternion.Lerp(physicsVRObject.transform.rotation, realLifeObject.transform.rotation, returnProgress);
+            physicsVRObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
+            physicsVRObject.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+
+            if (isGrabbed)
+            {
+                OVRInput.SetControllerVibration(0, 0, controllerKind);
             }
         }
         else
@@ -141,6 +161,7 @@ public class FollowRealLifeObject : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        if (isJoiningBack) return;
         isCollisioning = true;
         Vector3 localPosition = physicsVRObject.transform.InverseTransformPoint(collision.GetContact(0).point);
         physicsVRCollisionSpotTransform.localPosition = localPosition;
@@ -155,7 +176,7 @@ public class FollowRealLifeObject : MonoBehaviour
     private void OnCollisionExit(Collision collision)
     {
         isCollisioning = false;
-        joiningBackEndTime = Time.time + 0.2f;
+        joiningBackEndTime = Time.time + joiningBackDuration;
         isJoiningBack = true;
     }
 }
