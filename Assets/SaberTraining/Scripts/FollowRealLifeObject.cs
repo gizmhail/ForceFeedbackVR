@@ -133,7 +133,6 @@ public class FollowRealLifeObject : MonoBehaviour
         {
             var returnStart = joiningBackEndTime - joiningBackDuration;
             var returnProgress = (Time.time - returnStart) / joiningBackDuration;
-            Debug.Log($"Progress: {returnProgress}");
 
             physicsVRObject.transform.position = Vector3.Lerp(physicsVRObject.transform.position, realLifeObject.transform.position, returnProgress);
             physicsVRObject.transform.rotation = Quaternion.Lerp(physicsVRObject.transform.rotation, realLifeObject.transform.rotation, returnProgress);

@@ -18,6 +18,7 @@ public class PhysicsVRHand : MonoBehaviour
     public SkinnedMeshRenderer originalHandMesh;
     public Material originalHandMaterial;
     public bool usingGhostMaterial;
+    bool displayCopyHand = false;
 
     void InitializeCopyHand()
     {
@@ -65,13 +66,13 @@ public class PhysicsVRHand : MonoBehaviour
             copyHand.SetActive(false);
         } else
         {
-            copyHand.SetActive(true);
+            copyHand.SetActive(displayCopyHand);
         }
 
         if (!grabbedObject) return;
 
         // Enable physics world hand
-        copyHand.SetActive(grabbedObject.isCollisioning || grabbedObject.isJoiningBack);
+        copyHand.SetActive(displayCopyHand && (grabbedObject.isCollisioning || grabbedObject.isJoiningBack));
 
         // Track physics object
         copyHand.transform.position = grabbedObject.physicsVRGrabSpotTransform.position;
