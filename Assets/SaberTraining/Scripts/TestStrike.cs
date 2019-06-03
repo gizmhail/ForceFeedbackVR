@@ -9,6 +9,11 @@ public class TestStrike : MonoBehaviour
     public bool isStriking = false;
     public Rigidbody strikingBody;
 
+    public float lastStrengthChange = 0;
+    public float nominalStrengthLevelDuration = 1.5f;
+    public float strengthLevelDuration = 1.5f;
+    public float nominalStrength = 20f;
+    public float strength;
     void Awake()
     {
         if (strikingBody == null) {
@@ -19,6 +24,11 @@ public class TestStrike : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (strength == 0 || Time.time - lastStrengthChange > strengthLevelDuration) {
+            strength = Random.Range(nominalStrength * 0.75f, nominalStrength * 1.5f);
+            strengthLevelDuration = Random.Range(nominalStrengthLevelDuration * 0.5f, nominalStrengthLevelDuration * 1.5f);
+        }
+
         if (!isStriking && (Time.time - lastStrikePause > 5))
         {
             isStriking = true;
@@ -34,7 +44,7 @@ public class TestStrike : MonoBehaviour
     private void FixedUpdate()
     {
         if (isStriking) {
-            strikingBody.AddRelativeTorque(new Vector3(0, 0, -20));
+            strikingBody.AddRelativeTorque(new Vector3(0, 0, -strength));
         }
     }
 }
