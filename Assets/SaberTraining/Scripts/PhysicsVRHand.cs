@@ -18,7 +18,7 @@ public class PhysicsVRHand : MonoBehaviour
     public SkinnedMeshRenderer originalHandMesh;
     public Material originalHandMaterial;
     public bool usingGhostMaterial;
-    bool displayCopyHand = false;
+    bool displayCopyHand = true;
 
     void InitializeCopyHand()
     {
