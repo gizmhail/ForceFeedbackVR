@@ -45,6 +45,36 @@ namespace ForceBasedMove
             rb.AddForce(F);
         }
 
+        public static void AddSimpleForceTowards(this Rigidbody rb, Vector3 initialPosition, Vector3 destinationPosition)
+        {
+            float dt = Time.fixedDeltaTime;
+            Vector3 v = rb.velocity; //our current velocity
+            Vector3 force = rb.mass * (destinationPosition - initialPosition - v * dt) / (dt);
+            rb.AddForce(force);
+        }
+
+        public static void AddSimpleTorqueTowards(this Rigidbody rb, Quaternion initialRotation, Quaternion destinationRotation) {
+            //q will rotate from our current rotation to desired rotation
+            Quaternion q = destinationRotation * Quaternion.Inverse(initialRotation);
+            //convert to angle axis representation so we can do math with angular velocity
+            Vector3 x;
+            float xMag;
+            q.ToAngleAxis(out xMag, out x);
+            x.Normalize();
+            //w is the angular velocity we need to achieve
+            Vector3 w = x * xMag * Mathf.Deg2Rad / Time.fixedDeltaTime;
+            w -= rb.angularVelocity;
+            //to multiply with inertia tensor local then rotationTensor coords
+            Vector3 wl = rb.transform.InverseTransformDirection(w);
+            Vector3 Tl;
+            Vector3 wll = wl;
+            wll = rb.inertiaTensorRotation * wll;
+            wll.Scale(rb.inertiaTensor);
+            Tl = Quaternion.Inverse(rb.inertiaTensorRotation) * wll;
+            Vector3 T = rb.transform.TransformDirection(Tl);
+            rb.AddTorque(T);
+        }
+
         /// <summary>
         /// Rotate this rigidbody from sourcerotation to target rotation
         /// </summary>

@@ -112,12 +112,12 @@ public class FollowRealLifeObject : MonoBehaviour
                 torqueCatchupScale *= 4;
 
             }
+            
             rb.AddForceTowards(physicsVRGrabSpotTransform.position, realLifeGrabSpotTransform.position, frequency: forceCatchupScale);
             rb.AddTorqueTowards(physicsVRGrabSpotTransform.rotation, realLifeGrabSpotTransform.transform.rotation, frequency: torqueCatchupScale);
 
             // Small additional force if the hand is in the right position, but bended
             rb.AddForceTowards(physicsVRCollisionSpotTransform.position, realLifeCollisionSpotTransform.position, frequency: forceCatchupScale/2);
-
 
             if (isGrabbed)
             {
