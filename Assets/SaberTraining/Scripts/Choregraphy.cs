@@ -19,8 +19,13 @@ public class Choregraphy : MonoBehaviour
     void Start()
     {
         animator = GetComponent<Animator>();
+    }
+
+    private void OnEnable()
+    {
         NextStep();
     }
+
 
     void NextStep()
     {

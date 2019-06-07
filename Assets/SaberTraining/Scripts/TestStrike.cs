@@ -57,7 +57,9 @@ public class TestStrike : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (isStriking) {
+        if (isStriking)
+        {
+            //Debug.Log(transform.localRotation.eulerAngles);
             strikingBody.AddRelativeTorque(new Vector3(0, 0, -strength));
         }
     }
