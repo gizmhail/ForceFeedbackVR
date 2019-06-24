@@ -22,6 +22,10 @@ namespace ForceFeedbackSystem
         }
 
         public FFSStatus status;
+        /// <summary>
+        /// Under this distance, VR and IRL object are considered in sync
+        /// </summary>
+        public float synchronizedMinDistance = 0.03f;
 
         [Header("Layer masks (to avoid collisions for instance)")]
         public string irlLayerName = "RealLifeVR";
@@ -40,6 +44,14 @@ namespace ForceFeedbackSystem
         void Update()
         {
             if (isGrabbed && status == FFSStatus.Ungrabbed) ActivateGrabbedState();
+            if(status == FFSStatus.JoiningBack)
+            {
+                var distance = Vector3.Distance(transform.position, vrWorldObject.transform.position);
+                if(distance < synchronizedMinDistance)
+                {
+                    ActivateJoinedBackState();
+                }
+            }
         }
 
         void ActivateFFS()
@@ -120,7 +132,7 @@ namespace ForceFeedbackSystem
         void ActivateJoiningBackState()
         {
             status = FFSStatus.JoiningBack;
-            vrFollow.mode = ForceFollowObject.Mode.ObjectProgressiveReturnToTargetposition;// VR tries to join IRL position back
+            vrFollow.StartJoiningBack();// VR tries to join IRL position back
             SetGhostActivation(true);
         }
 

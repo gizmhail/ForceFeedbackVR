@@ -30,12 +30,17 @@ namespace ForceFeedbackSystem
         public Rigidbody objectRigidBody;
         public Rigidbody targetRigidBody;
 
+        float joiningBackEndTime = -1;
+
         [Header("Force attraction")]
         public float forceCatchupScale = 14f;
         public float torqueCatchupScale = 14f;
         public float isJoiningBackForceMultiplicator = 4;
         public float isJoiningBackTorqueMultiplicator = 4;
         public float secondaryAttractionPointForceMultiplicator = 0.5f;
+
+        [Header("Lerped returning")]
+        float joiningBackDuration = 0.5f;
 
         [Header("Attraction points")]
         public Transform mainTargetAttractionPoint;
@@ -61,6 +66,9 @@ namespace ForceFeedbackSystem
                 case Mode.TargetInstantlyMatchObjectPosition:
                     target.transform.position = transform.position;
                     target.transform.rotation = transform.rotation;
+                    break;
+                case Mode.ObjectProgressiveReturnToTargetposition:
+                    ObjectProgressiveReturnToTargetposition();
                     break;
             }
         }
@@ -132,17 +140,24 @@ namespace ForceFeedbackSystem
             objectRigidBody.AddForceTowards(secondaryObjectAttractionPoint.position, secondaryTargetAttractionPoint.position, frequency: forceCatchupScale* secondaryAttractionPointForceMultiplicator);
 
         }
-        /*
-        void PositionBasedClosing()
+        
+        public void StartJoiningBack()
+        {
+            mode = Mode.ObjectProgressiveReturnToTargetposition;
+            joiningBackEndTime = Time.time + joiningBackDuration;
+            GetComponent<Rigidbody>().velocity = Vector3.zero;
+            GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+        }
+
+        void ObjectProgressiveReturnToTargetposition()
         {
             var returnStart = joiningBackEndTime - joiningBackDuration;
             var returnProgress = (Time.time - returnStart) / joiningBackDuration;
 
-            physicsVRObject.transform.position = Vector3.Lerp(physicsVRObject.transform.position, realLifeObject.transform.position, returnProgress);
-            physicsVRObject.transform.rotation = Quaternion.Lerp(physicsVRObject.transform.rotation, realLifeObject.transform.rotation, returnProgress);
-            physicsVRObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
-            physicsVRObject.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
-        }*/
+            transform.position = Vector3.Lerp(transform.position, target.transform.position, returnProgress);
+            transform.rotation = Quaternion.Lerp(transform.rotation, target.transform.rotation, returnProgress);
+
+        }
 
         #endregion
 
