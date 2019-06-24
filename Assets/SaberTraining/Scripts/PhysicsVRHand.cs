@@ -75,8 +75,8 @@ public class PhysicsVRHand : MonoBehaviour
         copyHand.SetActive(displayCopyHand && (grabbedObject.isCollisioning || grabbedObject.isJoiningBack));
 
         // Track physics object
-        copyHand.transform.position = grabbedObject.physicsVRGrabSpotTransform.position;
-        copyHand.transform.rotation = grabbedObject.physicsVRGrabSpotTransform.rotation;
+        copyHand.transform.position = grabbedObject.PhysicsVrGrabSpotPosition;
+        copyHand.transform.rotation = grabbedObject.PhysicsVrGrabSpotRotation;
 
 
         // Change real avatar hand material

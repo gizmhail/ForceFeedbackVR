@@ -9,9 +9,6 @@ public class FollowRealLifeObject : MonoBehaviour
     public GameObject realLifeObject;// RealLifeVR layer
     public GameObject physicsVRObject;// GameVR layer
 
-    public Transform realLifeGrabSpotTransform;
-    public Transform physicsVRGrabSpotTransform;
-
     public Transform realLifeCollisionSpotTransform;
     public Transform physicsVRCollisionSpotTransform;
 
@@ -35,6 +32,35 @@ public class FollowRealLifeObject : MonoBehaviour
     float joiningBackEndTime = -1;
     float joiningBackDuration = 0.2f;
 
+    Vector3 grabSpotLocalPosition;
+    Quaternion grabSpotLocalRotation;
+
+    public Vector3 PhysicsVrGrabSpotPosition {
+        get {
+            return physicsVRObject.transform.position + grabSpotLocalPosition;
+        }
+    }
+
+    public Vector3 RealLifeGrabSpotPosition
+    {
+        get
+        {
+            return realLifeObject.transform.position + grabSpotLocalPosition;
+        }
+    }
+
+    public Quaternion PhysicsVrGrabSpotRotation {
+        get {
+            return physicsVRObject.transform.rotation * grabSpotLocalRotation;
+        }
+    }
+
+    public Quaternion RealLifeGrabSpotRotation {
+        get {
+            return realLifeObject.transform.rotation * grabSpotLocalRotation;
+        }
+    }
+
     //TODO Handle hand_right_renderPart_0 Skinmeshrenderer material
 
     void Awake()
@@ -49,21 +75,19 @@ public class FollowRealLifeObject : MonoBehaviour
         isGrabbed = grabbable.isGrabbed;
         if (isGrabbed && controllerKind == OVRInput.Controller.None)
         {
+            controllerKind = OVRInput.Controller.None;
             if (grabbable.grabbedBy.name.Contains("Left")){
                 controllerKind = OVRInput.Controller.LTouch;
                 PhysicsVRHand.Left.grabbedObject = this;
-                realLifeGrabSpotTransform.rotation = grabbable.grabbedBy.transform.rotation;
-                realLifeGrabSpotTransform.position = grabbable.grabbedBy.transform.position;
-                physicsVRGrabSpotTransform.rotation = grabbable.grabbedBy.transform.rotation;
-                physicsVRGrabSpotTransform.position = grabbable.grabbedBy.transform.position;
             }
             if (grabbable.grabbedBy.name.Contains("Right")) {
                 controllerKind = OVRInput.Controller.RTouch;
                 PhysicsVRHand.Right.grabbedObject = this;
-                realLifeGrabSpotTransform.rotation = grabbable.grabbedBy.transform.rotation;
-                realLifeGrabSpotTransform.position = grabbable.grabbedBy.transform.position;
-                physicsVRGrabSpotTransform.rotation = grabbable.grabbedBy.transform.rotation;
-                physicsVRGrabSpotTransform.position = grabbable.grabbedBy.transform.position;
+            }
+            if (controllerKind != OVRInput.Controller.None)
+            {
+                grabSpotLocalPosition = grabbable.grabbedBy.transform.position - realLifeObject.transform.position;
+                grabSpotLocalRotation = Quaternion.Inverse(realLifeObject.transform.rotation) * grabbable.grabbedBy.transform.rotation;
             }
         } else if (!isGrabbed && controllerKind != OVRInput.Controller.None) {
             controllerKind = OVRInput.Controller.None;
@@ -96,25 +120,16 @@ public class FollowRealLifeObject : MonoBehaviour
         if ((isCollisioning && isGrabbed)) {
             EnableRealLifeMGhostMesh();
             // Try to go back to real life object
-            /*
-            var delta = realLifeGrabSpotTransform.transform.position - physicsVRGrabSpotTransform.position;
-            rb.AddForce(delta * forceCatchupScale);
-
-            var deltaRotation = Quaternion.FromToRotation(physicsVRGrabSpotTransform.forward, realLifeGrabSpotTransform.transform.forward);
-            rb.AddTorque(deltaRotation.eulerAngles* torqueCatchupScale);
-            */
-
             var forceCatchupScale = this.forceCatchupScale;
             var torqueCatchupScale = this.torqueCatchupScale;
             if (isJoiningBack)
             {
                 forceCatchupScale *= 4;
                 torqueCatchupScale *= 4;
-
             }
-            
-            rb.AddForceTowards(physicsVRGrabSpotTransform.position, realLifeGrabSpotTransform.position, frequency: forceCatchupScale);
-            rb.AddTorqueTowards(physicsVRGrabSpotTransform.rotation, realLifeGrabSpotTransform.transform.rotation, frequency: torqueCatchupScale);
+
+            rb.AddForceTowards(PhysicsVrGrabSpotPosition, RealLifeGrabSpotPosition, frequency: forceCatchupScale);
+            rb.AddTorqueTowards(PhysicsVrGrabSpotRotation, RealLifeGrabSpotRotation, frequency: torqueCatchupScale);
 
             // Small additional force if the hand is in the right position, but bended
             rb.AddForceTowards(physicsVRCollisionSpotTransform.position, realLifeCollisionSpotTransform.position, frequency: forceCatchupScale/2);
