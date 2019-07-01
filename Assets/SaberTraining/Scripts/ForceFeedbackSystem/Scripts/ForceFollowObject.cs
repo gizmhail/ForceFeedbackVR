@@ -5,13 +5,15 @@ using UnityEngine;
 
 namespace ForceFeedbackSystem
 {
+
+
     public class ForceFollowObject : MonoBehaviour
     {
         public interface ICollisionHandler
         {
-            void OnCollisionEnter(Collision collision, ForceFollowObject forceFollowObject);
-            void OnCollisionStay(Collision collision, ForceFollowObject forceFollowObject);
-            void OnCollisionExit(Collision collision, ForceFollowObject forceFollowObject);
+            void OnFollowCollisionEnter(Collision collision, ForceFollowObject forceFollowObject);
+            void OnFollowCollisionStay(Collision collision, ForceFollowObject forceFollowObject);
+            void OnFollowCollisionExit(Collision collision, ForceFollowObject forceFollowObject);
         }
 
         public enum Mode {
@@ -165,19 +167,21 @@ namespace ForceFeedbackSystem
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (collisionHandler != null) collisionHandler.OnCollisionEnter(collision, this);
+            if (collisionHandler != null) collisionHandler.OnFollowCollisionEnter(collision, this);
         }
 
         private void OnCollisionStay(Collision collision)
         {
-            if (collisionHandler != null) collisionHandler.OnCollisionStay(collision, this);
+            if (collisionHandler != null) collisionHandler.OnFollowCollisionStay(collision, this);
         }
 
         private void OnCollisionExit(Collision collision)
         {
-            if (collisionHandler != null) collisionHandler.OnCollisionExit(collision, this);
+            if (collisionHandler != null) collisionHandler.OnFollowCollisionExit(collision, this);
         }
         #endregion
+
+
     }
 
 }

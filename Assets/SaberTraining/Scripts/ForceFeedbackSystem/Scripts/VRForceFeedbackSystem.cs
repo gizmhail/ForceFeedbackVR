@@ -4,18 +4,27 @@ using UnityEngine;
 
 namespace ForceFeedbackSystem
 {
-    [RequireComponent(typeof(Rigidbody))]
+    public interface IIRLMover { }
 
-    public class VRForceFeedbackSystem : MonoBehaviour, ForceFollowObject.ICollisionHandler
+
+    public interface IIRLMoveHandler
+    {
+        void OnIRLMoveStart(GameObject movingObject);
+        void OnIRLMove(GameObject movingObject, IIRLMoveHandler h);
+        void OnIRLMoveEnd(GameObject movingObject);
+    }
+
+    [RequireComponent(typeof(Rigidbody))]
+    public class VRForceFeedbackSystem : MonoBehaviour, ForceFollowObject.ICollisionHandler, IIRLMoveHandler
     {
         public Material ghostMetarial;
         public GameObject vrWorldObject;
 
-        public bool isGrabbed = false;
+        public bool isMovedInRealLife = false;
         public enum FFSStatus
         {
-            Ungrabbed,
-            Grabbed,
+            Free,
+            MovedInRealLife,
             TryingSynchronisation,
             JoiningBack,
             JoinedBack
@@ -43,7 +52,7 @@ namespace ForceFeedbackSystem
         // Update is called once per frame
         void Update()
         {
-            if (isGrabbed && status == FFSStatus.Ungrabbed) ActivateGrabbedState();
+            if (isMovedInRealLife && status == FFSStatus.Free) ActivateMovedInRealLifeState();
             if(status == FFSStatus.JoiningBack)
             {
                 var distance = Vector3.Distance(transform.position, vrWorldObject.transform.position);
@@ -83,7 +92,13 @@ namespace ForceFeedbackSystem
             vrFollow.target = gameObject;
             vrFollow.collisionHandler = this;//TODO: Move to a collision proxy component
 
-            ActivateUngrabbedState();
+            ActivateFreeState();
+
+            // Remove unrelevant components on Vr copy
+            foreach (IIRLMover mover in vrWorldObject.GetComponentsInChildren<IIRLMover>(true))
+            {
+                Destroy((Component)mover);
+            }
         }
 
         #region Ghost effect
@@ -108,18 +123,20 @@ namespace ForceFeedbackSystem
 
         #region Tracking states
 
-        void ActivateUngrabbedState()
+        void ActivateFreeState()
         {
-            status = FFSStatus.Ungrabbed;
+            Debug.Log("ActivateFreeState");
+            status = FFSStatus.Free;
             vrFollow.mode = ForceFollowObject.Mode.TargetInstantlyMatchObjectPosition;// IRL ghost follows VR
             SetGhostActivation(false);
         }
 
-        void ActivateGrabbedState()
+        void ActivateMovedInRealLifeState()
         {
-            status = FFSStatus.Grabbed;
+            Debug.Log("ActivateMovedInRealLifeState");
+            status = FFSStatus.MovedInRealLife;
             vrFollow.mode = ForceFollowObject.Mode.ObjectInstantlyMatchTargetPosition;// VR follows IRL ghost
-            SetGhostActivation(false);
+            SetGhostActivation(true);
         }
 
         void ActivateTryingSynchronisationState()
@@ -139,32 +156,52 @@ namespace ForceFeedbackSystem
         void ActivateJoinedBackState()
         {
             status = FFSStatus.JoinedBack;
-            if (isGrabbed)
+            if (isMovedInRealLife)
             {
-                ActivateGrabbedState();
+                ActivateMovedInRealLifeState();
             }
             else
             {
-                ActivateUngrabbedState();
+                ActivateFreeState();
             }
         }
 
         #endregion
 
         #region VR world object collision
-        public void OnCollisionEnter(Collision collision, ForceFollowObject forceFollowObject)
+        public void OnFollowCollisionEnter(Collision collision, ForceFollowObject forceFollowObject)
         {
             ActivateTryingSynchronisationState();
         }
 
-        public void OnCollisionStay(Collision collision, ForceFollowObject forceFollowObject)
+        public void OnFollowCollisionStay(Collision collision, ForceFollowObject forceFollowObject)
         {
         }
 
-        public void OnCollisionExit(Collision collision, ForceFollowObject forceFollowObject)
+        public void OnFollowCollisionExit(Collision collision, ForceFollowObject forceFollowObject)
         {
             ActivateJoiningBackState();
         }
         #endregion
-    } 
+
+        #region IRL Move
+        public void OnIRLMove(GameObject movingObject, IIRLMoveHandler m)
+        {
+            Debug.Log("OnIRLMove "+this+"/"+ m);
+            this.isMovedInRealLife = true;
+        }
+
+        public void OnIRLMoveStart(GameObject movingObject)
+        {
+            Debug.Log("OnIRLMoveStart");
+            this.isMovedInRealLife = true;
+        }
+
+        public void OnIRLMoveEnd(GameObject movingObject)
+        {
+            Debug.Log("OnIRLMoveEnd");
+            this.isMovedInRealLife = false;
+        }
+        #endregion
+    }
 }
