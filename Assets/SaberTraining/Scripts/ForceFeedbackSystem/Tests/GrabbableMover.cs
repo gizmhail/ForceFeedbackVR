@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,6 +13,18 @@ namespace ForceFeedbackSystem
         private void Awake()
         {
             moveHandler = GetComponent<IIRLMoveHandler>();
+            if (m_grabPoints.Length == 0)
+            {
+                // Get the collider from the grabbable
+                Collider collider = this.GetComponent<Collider>();
+                if (collider == null)
+                {
+                    throw new ArgumentException("Grabbables cannot have zero grab points and no collider -- please add a grab point or collider.");
+                }
+
+                // Create a default grab point
+                m_grabPoints = new Collider[1] { collider };
+            }
         }
 
         private void Update()
