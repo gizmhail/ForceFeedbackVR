@@ -47,7 +47,7 @@ namespace ForceFeedbackSystem
                 {
                     moveHandler.OnIRLMoveStart(gameObject);
                 }
-                if (moveHandler != null && moving) moveHandler.OnIRLMove(gameObject, moveHandler);
+                if (moveHandler != null && moving) moveHandler.OnIRLMove(gameObject);
             } else
             {
                 if (moveHandler != null && moving)

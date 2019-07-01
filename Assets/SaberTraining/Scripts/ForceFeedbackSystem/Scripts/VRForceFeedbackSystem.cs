@@ -10,7 +10,7 @@ namespace ForceFeedbackSystem
     public interface IIRLMoveHandler
     {
         void OnIRLMoveStart(GameObject movingObject);
-        void OnIRLMove(GameObject movingObject, IIRLMoveHandler h);
+        void OnIRLMove(GameObject movingObject);
         void OnIRLMoveEnd(GameObject movingObject);
     }
 
@@ -43,6 +43,15 @@ namespace ForceFeedbackSystem
         MeshRenderer[] irlMeshes;
         ForceFollowObject vrFollow;
 
+        [Header("Haptic trigger level")]
+        float outOfSyncDistance = 0;
+        public float maxOutOfSyncDistance = 0.2f;
+        float lastVibrationLevel = 0;
+
+        [Header("OVR specific")]
+        public OVRInput.Controller controllerKind = OVRInput.Controller.None;
+
+
         // Start is called before the first frame update
         void Start()
         {
@@ -53,14 +62,23 @@ namespace ForceFeedbackSystem
         void Update()
         {
             if (isMovedInRealLife && status == FFSStatus.Free) ActivateMovedInRealLifeState();
-            if(status == FFSStatus.JoiningBack)
+            if(status == FFSStatus.JoiningBack || status == FFSStatus.TryingSynchronisation)
             {
-                var distance = Vector3.Distance(transform.position, vrWorldObject.transform.position);
-                if(distance < synchronizedMinDistance)
+                outOfSyncDistance = Vector3.Distance(vrFollow.mainObjectAttractionPoint.position, vrFollow.mainTargetAttractionPoint.position);
+                Debug.Log("*"+ outOfSyncDistance);
+            }
+            else
+            {
+                outOfSyncDistance = 0f;
+            }
+            if (status == FFSStatus.JoiningBack)
+            {
+                if(outOfSyncDistance < synchronizedMinDistance)
                 {
                     ActivateJoinedBackState();
                 }
             }
+            SetVibrationLevel(outOfSyncDistance / maxOutOfSyncDistance);
         }
 
         void ActivateFFS()
@@ -136,7 +154,7 @@ namespace ForceFeedbackSystem
             Debug.Log("ActivateMovedInRealLifeState");
             status = FFSStatus.MovedInRealLife;
             vrFollow.mode = ForceFollowObject.Mode.ObjectInstantlyMatchTargetPosition;// VR follows IRL ghost
-            SetGhostActivation(true);
+            SetGhostActivation(false);
         }
 
         void ActivateTryingSynchronisationState()
@@ -185,22 +203,56 @@ namespace ForceFeedbackSystem
         #endregion
 
         #region IRL Move
-        public void OnIRLMove(GameObject movingObject, IIRLMoveHandler m)
+        public void OnIRLMove(GameObject movingObject)
         {
-            Debug.Log("OnIRLMove "+this+"/"+ m);
             this.isMovedInRealLife = true;
         }
 
         public void OnIRLMoveStart(GameObject movingObject)
         {
-            Debug.Log("OnIRLMoveStart");
             this.isMovedInRealLife = true;
+            DetectHapticController();
         }
 
         public void OnIRLMoveEnd(GameObject movingObject)
         {
-            Debug.Log("OnIRLMoveEnd");
             this.isMovedInRealLife = false;
+        }
+        #endregion
+
+        #region Haptic 
+
+        void DetectHapticController()
+        {
+            //TODO Move to separate component
+            var grabbable = GetComponent<GrabbableMover>();
+            controllerKind = OVRInput.Controller.None;
+            if (grabbable != null && grabbable.grabbedBy != null)
+            {
+                if (grabbable.grabbedBy.name.Contains("Left"))
+                {
+                    controllerKind = OVRInput.Controller.LTouch;
+                }
+                if (grabbable.grabbedBy.name.Contains("Right"))
+                {
+                    controllerKind = OVRInput.Controller.RTouch;
+                }
+            }
+        }
+        void SetVibrationLevel(float level)
+        {
+            //TODO Move to separate component
+            if (controllerKind == OVRInput.Controller.None) return;
+            if (level == 0 && lastVibrationLevel == 0) return;
+            lastVibrationLevel = level;
+
+            if (level == 0)
+            {
+                OVRInput.SetControllerVibration(0, 0, controllerKind);
+            } else
+            {
+                OVRInput.SetControllerVibration(frequency: level, amplitude: level, controllerKind);
+            }
         }
         #endregion
     }
