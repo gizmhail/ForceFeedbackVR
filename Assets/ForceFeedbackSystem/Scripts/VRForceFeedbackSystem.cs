@@ -6,10 +6,14 @@ namespace ForceFeedbackSystem
 {
     public interface IIRLMover { }
 
+    public interface IHapticActioner {
+        void SetVibrationLevel(float level);
+    }
+
 
     public interface IIRLMoveHandler
     {
-        void OnIRLMoveStart(GameObject movingObject);
+        void OnIRLMoveStart(GameObject movingObject, Vector3 grabSpotLocalPosition, Quaternion grabSpotLocalRotation);
         void OnIRLMove(GameObject movingObject);
         void OnIRLMoveEnd(GameObject movingObject);
     }
@@ -17,7 +21,7 @@ namespace ForceFeedbackSystem
     [RequireComponent(typeof(Rigidbody))]
     public class VRForceFeedbackSystem : MonoBehaviour, ForceFollowObject.ICollisionHandler, IIRLMoveHandler
     {
-        public Material ghostMetarial;
+        public Material ghostMaterial;
         public GameObject vrWorldObject;
 
         public bool isMovedInRealLife = false;
@@ -46,11 +50,7 @@ namespace ForceFeedbackSystem
         [Header("Haptic trigger level")]
         float outOfSyncDistance = 0;
         public float maxOutOfSyncDistance = 0.2f;
-        float lastVibrationLevel = 0;
-
-        [Header("OVR specific")]
-        public OVRInput.Controller controllerKind = OVRInput.Controller.None;
-
+        IHapticActioner hapticActioner;
 
         // Start is called before the first frame update
         void Start()
@@ -62,10 +62,10 @@ namespace ForceFeedbackSystem
         void Update()
         {
             if (isMovedInRealLife && status == FFSStatus.Free) ActivateMovedInRealLifeState();
-            if(status == FFSStatus.JoiningBack || status == FFSStatus.TryingSynchronisation)
+            if (!isMovedInRealLife && status == FFSStatus.TryingSynchronisation) ActivateFreeState();
+            if (status == FFSStatus.JoiningBack || status == FFSStatus.TryingSynchronisation)
             {
                 outOfSyncDistance = Vector3.Distance(vrFollow.mainObjectAttractionPoint.position, vrFollow.mainTargetAttractionPoint.position);
-                Debug.Log("*"+ outOfSyncDistance);
             }
             else
             {
@@ -83,6 +83,8 @@ namespace ForceFeedbackSystem
 
         void ActivateFFS()
         {
+            hapticActioner = GetComponent<IHapticActioner>();
+
             vrWorldObject = GameObject.Instantiate(gameObject);
 
             // We remove this component to avoid loops
@@ -123,10 +125,10 @@ namespace ForceFeedbackSystem
         void ApplyGhostEffect()
         {
             irlMeshes = GetComponentsInChildren<MeshRenderer>();
-            if (ghostMetarial == null) return;
+            if (ghostMaterial == null) return;
             foreach (var mesh in irlMeshes)
             {
-                mesh.material = ghostMetarial;
+                mesh.material = ghostMaterial;
             }
         }
 
@@ -168,7 +170,7 @@ namespace ForceFeedbackSystem
         {
             status = FFSStatus.JoiningBack;
             vrFollow.StartJoiningBack();// VR tries to join IRL position back
-            SetGhostActivation(true);
+            SetGhostActivation(isMovedInRealLife);
         }
 
         void ActivateJoinedBackState()
@@ -189,7 +191,12 @@ namespace ForceFeedbackSystem
         #region VR world object collision
         public void OnFollowCollisionEnter(Collision collision, ForceFollowObject forceFollowObject)
         {
+            if (!isMovedInRealLife) return;
             ActivateTryingSynchronisationState();
+
+            Vector3 localPosition = forceFollowObject.transform.InverseTransformPoint(collision.GetContact(0).point);
+            vrFollow.secondaryObjectAttractionPoint.localPosition = localPosition;
+            vrFollow.secondaryTargetAttractionPoint.localPosition = localPosition;
         }
 
         public void OnFollowCollisionStay(Collision collision, ForceFollowObject forceFollowObject)
@@ -198,7 +205,14 @@ namespace ForceFeedbackSystem
 
         public void OnFollowCollisionExit(Collision collision, ForceFollowObject forceFollowObject)
         {
-            ActivateJoiningBackState();
+            if (isMovedInRealLife)
+            {
+                ActivateJoiningBackState();
+            }
+            else
+            {
+                ActivateFreeState();
+            }
         }
         #endregion
 
@@ -208,10 +222,13 @@ namespace ForceFeedbackSystem
             this.isMovedInRealLife = true;
         }
 
-        public void OnIRLMoveStart(GameObject movingObject)
+        public void OnIRLMoveStart(GameObject movingObject, Vector3 grabSpotLocalPosition, Quaternion grabSpotLocalRotation)
         {
             this.isMovedInRealLife = true;
-            DetectHapticController();
+            vrFollow.mainObjectAttractionPoint.localPosition = grabSpotLocalPosition;
+            vrFollow.mainObjectAttractionPoint.localRotation = grabSpotLocalRotation;
+            vrFollow.mainTargetAttractionPoint.localPosition = grabSpotLocalPosition;
+            vrFollow.mainTargetAttractionPoint.localRotation = grabSpotLocalRotation;
         }
 
         public void OnIRLMoveEnd(GameObject movingObject)
@@ -222,37 +239,10 @@ namespace ForceFeedbackSystem
 
         #region Haptic 
 
-        void DetectHapticController()
-        {
-            //TODO Move to separate component
-            var grabbable = GetComponent<GrabbableMover>();
-            controllerKind = OVRInput.Controller.None;
-            if (grabbable != null && grabbable.grabbedBy != null)
-            {
-                if (grabbable.grabbedBy.name.Contains("Left"))
-                {
-                    controllerKind = OVRInput.Controller.LTouch;
-                }
-                if (grabbable.grabbedBy.name.Contains("Right"))
-                {
-                    controllerKind = OVRInput.Controller.RTouch;
-                }
-            }
-        }
         void SetVibrationLevel(float level)
         {
-            //TODO Move to separate component
-            if (controllerKind == OVRInput.Controller.None) return;
-            if (level == 0 && lastVibrationLevel == 0) return;
-            lastVibrationLevel = level;
-
-            if (level == 0)
-            {
-                OVRInput.SetControllerVibration(0, 0, controllerKind);
-            } else
-            {
-                OVRInput.SetControllerVibration(frequency: level, amplitude: level, controllerKind);
-            }
+            if (hapticActioner == null) return;
+            hapticActioner.SetVibrationLevel(level);
         }
         #endregion
     }

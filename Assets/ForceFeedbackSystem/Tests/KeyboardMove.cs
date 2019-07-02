@@ -45,7 +45,7 @@ namespace ForceFeedbackSystem
             {
                 if (moveHandler != null && !moving)
                 {
-                    moveHandler.OnIRLMoveStart(gameObject);
+                    moveHandler.OnIRLMoveStart(gameObject, Vector3.zero, Quaternion.identity);
                 }
                 if (moveHandler != null && moving) moveHandler.OnIRLMove(gameObject);
             } else

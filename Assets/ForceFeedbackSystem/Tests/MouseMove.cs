@@ -42,7 +42,7 @@ namespace ForceFeedbackSystem
             sphere.transform.localScale = new Vector3(0.1f,0.1f,0.1f);
 
             initialDelta = gameObject.transform.position - clickPosition;
-            if (moveHandler != null) moveHandler.OnIRLMoveStart(gameObject);
+            if (moveHandler != null) moveHandler.OnIRLMoveStart(gameObject, Vector3.zero, Quaternion.identity);
         }
 
         void OnMouseDrag()
