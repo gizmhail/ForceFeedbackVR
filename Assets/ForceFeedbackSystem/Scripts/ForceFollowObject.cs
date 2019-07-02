@@ -36,7 +36,7 @@ namespace ForceFeedbackSystem
 
         [Header("Force attraction")]
         public float forceCatchupScale = 14f;
-        public float torqueCatchupScale = 14f;
+        public float torqueCatchupScale = 2f;
         public float isJoiningBackForceMultiplicator = 4;
         public float isJoiningBackTorqueMultiplicator = 4;
         public float secondaryAttractionPointForceMultiplicator = 0.5f;

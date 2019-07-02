@@ -18,7 +18,7 @@ public class FollowRealLifeObject : MonoBehaviour
     public bool isCollisioning = false;
 
     public float forceCatchupScale = 14f;
-    public float torqueCatchupScale = 14f;
+    public float torqueCatchupScale = 2f;
 
     public float maxDistance = 0.5f;
     public OVRInput.Controller controllerKind = OVRInput.Controller.None;
