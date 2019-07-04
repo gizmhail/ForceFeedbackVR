@@ -25,6 +25,7 @@ namespace ForceFeedbackSystem
         public Material ghostMaterial;
         public string irlLayerName = "RealLifeVR";
         public string vrWorldLayerName = "GameVR";
+        public string grabbingIrlLayerName = "GrabbingRealLife";
 
         private void Awake()
         {
@@ -52,7 +53,7 @@ namespace ForceFeedbackSystem
                 ffs.ghostMaterial = ghostMaterial;
                 ffs.irlLayerName = irlLayerName;
                 ffs.vrWorldLayerName = vrWorldLayerName;
-            }
+            }            
         }
 
         private void Update()
@@ -66,6 +67,11 @@ namespace ForceFeedbackSystem
         public override void GrabBegin(OVRGrabber hand, Collider grabPoint)
         {
             base.GrabBegin(hand, grabPoint);
+
+            if(hand.gameObject.layer != LayerMask.NameToLayer(grabbingIrlLayerName))
+            {
+                Debug.LogError("To behave properly, the grabbing object should be in a dedicated layer, the only one interacting with the " + irlLayerName + " layer");
+            }
 
             var grabSpotLocalPosition = grabbedBy.transform.position - transform.position;
             var grabSpotLocalRotation = Quaternion.Inverse(transform.rotation) * grabbedBy.transform.rotation;

@@ -43,7 +43,7 @@ namespace ForceFeedbackSystem
         [Header("Layer masks (to avoid collisions for instance)")]
         public string irlLayerName = "RealLifeVR";
         public string vrWorldLayerName = "GameVR";
-        
+
         MeshRenderer[] irlMeshes;
         ForceFollowObject vrFollow;
 
@@ -145,7 +145,6 @@ namespace ForceFeedbackSystem
 
         void ActivateFreeState()
         {
-            Debug.Log("ActivateFreeState");
             status = FFSStatus.Free;
             vrFollow.mode = ForceFollowObject.Mode.TargetInstantlyMatchObjectPosition;// IRL ghost follows VR
             SetGhostActivation(false);
@@ -153,7 +152,6 @@ namespace ForceFeedbackSystem
 
         void ActivateMovedInRealLifeState()
         {
-            Debug.Log("ActivateMovedInRealLifeState");
             status = FFSStatus.MovedInRealLife;
             vrFollow.mode = ForceFollowObject.Mode.ObjectInstantlyMatchTargetPosition;// VR follows IRL ghost
             SetGhostActivation(false);
