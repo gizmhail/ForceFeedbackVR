@@ -21,11 +21,14 @@ namespace ForceFeedbackSystem
         float lastVibrationLevel = 0;
 
         [Header("Force feedback system")]
-        public bool installForceFeedbackSystem = false;
+        public bool installForceFeedbackSystem = true;
         public Material ghostMaterial;
         public string irlLayerName = "RealLifeVR";
         public string vrWorldLayerName = "GameVR";
         public string grabbingIrlLayerName = "GrabbingRealLife";
+
+        [Header("Set dynamically")]
+        public VRForceFeedbackSystem forceFeedbackSystem;
 
         private void Awake()
         {
@@ -49,11 +52,15 @@ namespace ForceFeedbackSystem
             base.Start();
             if (installForceFeedbackSystem && GetComponent<VRForceFeedbackSystem>() == null)
             {
-                var ffs = gameObject.AddComponent<VRForceFeedbackSystem>();
-                ffs.ghostMaterial = ghostMaterial;
-                ffs.irlLayerName = irlLayerName;
-                ffs.vrWorldLayerName = vrWorldLayerName;
-            }            
+                forceFeedbackSystem = gameObject.AddComponent<VRForceFeedbackSystem>();
+                forceFeedbackSystem.ghostMaterial = ghostMaterial;
+                forceFeedbackSystem.irlLayerName = irlLayerName;
+                forceFeedbackSystem.vrWorldLayerName = vrWorldLayerName;
+            }
+            else
+            {
+                forceFeedbackSystem = GetComponent<VRForceFeedbackSystem>();
+            }
         }
 
         private void Update()
