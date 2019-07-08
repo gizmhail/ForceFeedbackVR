@@ -29,6 +29,8 @@ namespace ForceFeedbackSystem
 
         [Header("Set dynamically")]
         public VRForceFeedbackSystem forceFeedbackSystem;
+        public Vector3 grabSpotLocalPosition;
+        public Quaternion grabSpotLocalRotation;
 
         private void Awake()
         {
@@ -80,14 +82,24 @@ namespace ForceFeedbackSystem
                 Debug.LogError("To behave properly, the grabbing object should be in a dedicated layer, the only one interacting with the " + irlLayerName + " layer");
             }
 
-            var grabSpotLocalPosition = grabbedBy.transform.position - transform.position;
-            var grabSpotLocalRotation = Quaternion.Inverse(transform.rotation) * grabbedBy.transform.rotation;
+            grabSpotLocalPosition = grabbedBy.transform.position - transform.position;
+            grabSpotLocalRotation = Quaternion.Inverse(transform.rotation) * grabbedBy.transform.rotation;
 
             DetectGrabbingController();
             if (MoveHandler != null)
             {
                 MoveHandler.OnIRLMoveStart(gameObject, grabSpotLocalPosition, grabSpotLocalRotation);
                 moving = true;
+            }
+
+            // warn VR hands
+            if (grabbingControllerKind == OVRInput.Controller.LTouch && OVRVRHand.Left != null)
+            {
+                OVRVRHand.Left.grabbedObject = this;
+            }
+            if (grabbingControllerKind == OVRInput.Controller.RTouch && OVRVRHand.Right != null)
+            {
+                OVRVRHand.Right.grabbedObject = this;
             }
         }
 
