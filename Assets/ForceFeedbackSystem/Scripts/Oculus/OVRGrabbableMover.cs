@@ -21,10 +21,6 @@ namespace ForceFeedbackSystem
         float lastVibrationLevel = 0;
 
         [Header("Force feedback system")]
-        public bool installForceFeedbackSystem = true;
-        public Material ghostMaterial;
-        public string irlLayerName = "RealLifeVR";
-        public string vrWorldLayerName = "GameVR";
         public string grabbingIrlLayerName = "GrabbingRealLife";
 
         [Header("Set dynamically")]
@@ -52,16 +48,13 @@ namespace ForceFeedbackSystem
         protected override void Start()
         {
             base.Start();
-            if (installForceFeedbackSystem && GetComponent<VRForceFeedbackSystem>() == null)
-            {
-                forceFeedbackSystem = gameObject.AddComponent<VRForceFeedbackSystem>();
-                forceFeedbackSystem.ghostMaterial = ghostMaterial;
-                forceFeedbackSystem.irlLayerName = irlLayerName;
-                forceFeedbackSystem.vrWorldLayerName = vrWorldLayerName;
-            }
-            else
+            if (forceFeedbackSystem == null)
             {
                 forceFeedbackSystem = GetComponent<VRForceFeedbackSystem>();
+            }
+            if (forceFeedbackSystem == null)
+            {
+                Debug.LogError("Missing VRForceFeedbackSystem component");
             }
         }
 
@@ -79,7 +72,7 @@ namespace ForceFeedbackSystem
 
             if(hand.gameObject.layer != LayerMask.NameToLayer(grabbingIrlLayerName))
             {
-                Debug.LogError("To behave properly, the grabbing object should be in a dedicated layer, the only one interacting with the " + irlLayerName + " layer");
+                Debug.LogError("To behave properly, the grabbing object should be in a dedicated layer, the only one interacting with the " + forceFeedbackSystem.irlLayerName + " layer");
             }
 
             grabSpotLocalPosition = transform.InverseTransformPoint(grabbedBy.transform.position);

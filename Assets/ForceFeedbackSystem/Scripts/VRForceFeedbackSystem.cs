@@ -22,9 +22,7 @@ namespace ForceFeedbackSystem
     public class VRForceFeedbackSystem : MonoBehaviour, ForceFollowObject.ICollisionHandler, IIRLMoveHandler
     {
         public Material ghostMaterial;
-        public GameObject vrWorldObject;
 
-        public bool isMovedInRealLife = false;
         public enum FFSStatus
         {
             Free,
@@ -34,7 +32,6 @@ namespace ForceFeedbackSystem
             JoinedBack
         }
 
-        public FFSStatus status;
         /// <summary>
         /// Under this distance, VR and IRL object are considered in sync
         /// </summary>
@@ -51,6 +48,13 @@ namespace ForceFeedbackSystem
         float outOfSyncDistance = 0;
         public float maxOutOfSyncDistance = 0.2f;
         IHapticActioner hapticActioner;
+
+        [Header("Set dynamically")]
+        public GameObject vrWorldObject;
+        public FFSStatus status;
+        [SerializeField]
+        bool isMovedInRealLife = false;
+
 
         // Start is called before the first frame update
         void Start()

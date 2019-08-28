@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/SaberTrainingProto/Scenes/SaberTestZone.unity
-    guid: bca453603fe0f874e8f7e18392792daf
+    path: Assets/SaberTraining/Scenes/SaberTestZoneFFS.unity
+    guid: 831fc757dffe39c48ba87c3b324fe645
   m_configObjects: {}
